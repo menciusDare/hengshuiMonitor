@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="44px" viewBox="0 0 30 44" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61.1 (89650) - https://sketch.com -->
+    <title>编组 2@3x</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect x="0" y="0" width="30" height="44" id="rect-1"></rect>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-2">
+            <g id="1倍">
+                <image x="0" y="0" width="30" height="44" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAsCAYAAABygggEAAAABGdBTUEAALGOfPtRkwAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAHqADAAQAAAABAAAALAAAAAARoNzjAAAEMElEQVRYCb1XTUhUURQ+WplpVgphKoS0kqBFGBhRECHYD1QU1CrQfbTM2ggtXAhGtHVTQUELoxIqsNxISeREGRQFUSRhlKTWKBmGp++b997ceb/emREPfLzzzj3n++7fu3OnRCxMRUqRtgc4DjQD9S7wkAkXL/G8B4yUiCziWbhBsBw4D3wH1BLMZU15QcooPAmMA7aCwTzWnrQWR3IJ0F2EYLAD5MLsJ5grejtStLpatb1d9e5d1Q8fVNNpB/QZYxtzomeInPHiaAyPtLxc9eJF1ZkZXdKYw1zWhDvQHTlmJHJN/QUNDaqjo0vqhRJYw9ogX3DNkcDd699ILPz6NcSZCUxOqh48qNrWpko/ylgbFqeG2e144fY3PeRUxY10bEy1sVH1wAEH9BmLMnKEp/18ZsohWAr4v1OuU5T196tWVqqePau6sOCAPmNsizJy5Q7K0SoVBPf6GrgzgxtpcVG1q0u1rEy1ry9MzxjbmMPcXCNXeLfvpXCvT5ifRdBOnVLdvFl1eDjYYt7ZxpzTp03M88jpH3Uvz2CevcaOHTO+5+3cKTI6KrJvnxcJP9nGHOYGLczZTGEe+Ma2bze+59XVOYQlOAOSQNEtW7wq8wxz1vN4TCNjfTYrjdf15jUTr6kR6ewUaW3NpkU6T56I9PSITE35m2dnRaqqcmOzXOO0b/55FAaN65NKBaPhd+YwN2jk9K/xb041f0+NTfhfTUMRXpjzW1j43Tt7hffvRS5cELl6VeTv3/i6t2+DbRMU5s3B2P37xk/yOIqWFmcn9/aKdHTEZw8MBNtSdgdI1BrfuKG6bZuzmoODquvWOfsguMYxBwhHPAL8yHZpetrZmdlAjDM/L1Jd7TRy1//5E53IXU5OY9QaWY0vcxE77jJekOHalSsiJ06I7NrlBDZtEuGnkmtfvuS+Of7QkOkMI6mUCLn8dpmamRCEk38Wr1+POm9Vjx51pvrzZ+dXiGcyc2k2P4tUh/jKXwS8mYD4yl993FHzCO0HgieNM9WFX/bugBNLm2BIKAMGIsWjOrR07BE5EyRNExLXAoPLID4EDnPHMhLxHgoqgBdFiL9EbWW8QkILCmuBTwWI8zaJH/EiDARNwFQe4r+Qu6MISVMKov3APwtxnoKHTOUyeCC8ZCHMo3d5DaKrgGcJ4q/QZvfZ5Ns1EDcCMxHic4g15cuXVz4EzkQIn8uLpNBkCD/NEf8If02+XLwIWBnIeY63AjdRUAvAzRhFr7ltyeexW2D9AOlG4DGguDHra+AngBt4xmeMbW7ORhtiqx6C8AHIDpPwObAAbAA4XTMAh7wbcO0hSI94L3FPW+E5EFSQhLencQD/DTLG/xxbAff2xdgcSAN/RRguwDhidyq9KU16cnaWxyCaXeMlOsB9YLXG1j0Doberb8F/A/AgIegzxh1vtXQU/Q+bv29/XTaJyAAAAABJRU5ErkJggg=="></image>
+                <use fill="#2198E2" fill-rule="evenodd" xlink:href="#rect-1"></use>
+            </g>
+            <circle id="椭圆形" fill="#FFFFFF" cx="15" cy="15" r="11"></circle>
+            <g id="4S" transform="translate(9.000000, 8.000000)" stroke="#2198E2" stroke-width="1.5">
+                <g id="编组-13" transform="translate(0.000000, 0.000000)">
+                    <polyline id="路径-12" stroke-linecap="round" stroke-linejoin="round" points="0 4.28571429 6.14634147 0 12 4.08163265"></polyline>
+                    <path d="M2.57142857,5.57142857 L9.42857143,5.57142857 C10.3753453,5.57142857 11.1428571,6.33894043 11.1428571,7.28571429 L11.1428571,12.4285714 C11.1428571,13.3753453 10.3753453,14.1428571 9.42857143,14.1428571 L9.09295946,14.1428571 L9.09295946,12.2104965 C9.09295946,11.7371097 8.70920357,11.3533537 8.23581661,11.3533537 L7.54285714,11.3533537 C7.06947021,11.3533537 6.68571429,11.7371097 6.68571429,12.2104965 L6.68571429,14.1428571 L2.57142857,14.1428571 C1.62465471,14.1428571 0.857142857,13.3753453 0.857142857,12.4285714 L0.857142857,7.28571429 C0.857142857,6.33894043 1.62465471,5.57142857 2.57142857,5.57142857 Z" id="矩形"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

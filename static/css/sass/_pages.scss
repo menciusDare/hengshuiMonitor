@@ -1,0 +1,27 @@
+@charset "UTF-8";
+.page{
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  min-width: 1200px;
+  display: flex;
+  flex-direction: column;
+}
+.content{
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+.main{
+  flex: 1;
+  padding: 0 $num $num $num;
+  overflow: auto;
+}
+
+
+
+
+

@@ -1,0 +1,2127 @@
+<template>
+    <!-- 内容区域 -->
+    <div class="main main-full" style="padding-bottom: 0">
+        <BreadcrumbComponent :routePath="routePath"/>
+        <div class="map-box">
+            <!-- 地图 -->
+            <div class="wfMapAllmap" id="wfMap"></div>
+            <!-- 分类 -->
+            <div class="type" style="z-index: 9999 !important;">
+                <div class="typeTitle">
+                    <div class="typeMain" v-for="(item, index) in typeData" :key="index" :class="item.key === typeSelected ? 'selected' : ''">
+                        <div class="mainList" @click="typeTab(item.key)">
+                            <div class="iconMain">
+                                <i :class="item.class"></i>
+                            </div>
+                            {{item.name}}
+                            <i :class="item.key === typeSelected ? 'el-icon-caret-bottom' : 'el-icon-caret-top'"></i>
+                        </div>
+                        <div class="typeContainer" :class="item.key === typeSelected ? 'show' : ''">
+                            <div class="typeList">
+                                <div :class="[dataCountSource==item.value?'listMainSel':'listMain']"  @click="dataCountSourceType(item)" v-for="(item, index) in item.children" :key="index">{{item.name}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- 左侧 -->
+            <div class="map-left" style="margin-top: -16px;z-index: 9999 !important;" >
+                <!-- 筛选 -->
+                <div class="filter-area">
+                    <ul class="filter-box">
+                        <li class="filter-item">
+                            <div class="filter-con">
+                                <div class="el-select">
+                                    <el-cascader
+                                            :show-all-levels="false"
+                                            placeholder="请选择"
+                                            ref="regionElCascader"
+                                            :disabled="isDisabled"
+                                            @change="searchRegionChange()"
+                                            v-model="regionCode"
+                                            :options="regionOptions"
+                                            :props="{   checkStrictly: true }">
+                                    </el-cascader>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="filter-item" v-if="typeSelected === 'qiye' ">
+                            <div class="filter-con">
+                                <div class="el-select">
+                                    <el-select v-model="search.entType" clearable @change="searchMap">
+
+                                        <el-option
+                                                v-for="item in entTypeOptions"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="filter-item" v-if="typeSelected === 'shuju' ">
+                            <div class="filter-con">
+                                <div class="el-select">
+                                    <el-select v-model="dicType" clearable @change="searchMap1">
+                                        <el-option label="全部" value=""></el-option>
+                                        <el-option
+                                                v-for="item in dicTypes"
+                                                :key="item.id"
+                                                :label="item.dicTypeExplain"
+                                                :value="item.id">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 右侧企业---数据-->
+            <div class="enterpriseRight" id="enterpriseRight" style="z-index: 9997"  v-for="(item,index) in enterpriseAndData" :key="index">
+                <div v-if="item.key === typeSelected" class="EnterpriseMain" >
+                   <div class="EnterpriseMainCon">
+                       <div class="detailTop" >
+                           <div class="name" v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'">{{item.title}}</div>
+                           <div class="name" v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'">{{item.title}}</div>
+                           <v-chart :options="item.EnterpriseEchars" autoresize id="EnterpriseEchars" v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'"></v-chart>
+                           <div v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'" class="count">{{count.toFixed(2)}}吨</div>
+
+                       </div>
+                       <div class="detailMain">
+                           <div class="listMain" v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'" v-for= "(item2, index) in item.data" :key="index">
+                               <div class="top" style="position:relative">
+                                <span v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'">
+                                        <span>{{item2.regionName}}</span>
+                                        <div class="num"><span></span>{{(item2.total/1000).toFixed(2)}}吨</div>
+                                    <!--<span>{{item2.name}}</span>-->
+                                </span>
+                                   <span v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'">
+                                    <span>{{item2.typeName}}</span>
+                                    <div style="display:flex">
+                                        <span style="font-size:12px;position:absolute; right:0;font-weight: bold">申报: {{item2.thisYearNumber}} kg</span>
+                                        <div class="num"><span >实际: </span>{{(item2.productionNumber/1000).toFixed(2)}}吨</div>
+                                    </div>
+                                </span>
+                               </div>
+                               <div class="progress" v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'">
+                                   <el-progress :percentage="item2.percentage" color="#7E90C4"  :stroke-width="14"></el-progress>
+                               </div>
+                               <div class="progress" v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'">
+                                   <el-progress :percentage="item2.percentage" color="#7E90C4"  :stroke-width="14"></el-progress>
+                               </div>
+                           </div>
+
+                           <div class="listMain" v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'" v-for= "(item2, index) in enterpriseAndData.dataMain.data" :key="index">
+                               <div class="top">
+                                <span v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'">
+                                    <span>{{item2.regionName}}</span>
+                                    <!--<span>{{item2.name}}</span>-->
+                                </span>
+                                   <span v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'" >
+                                    <span>{{item2.typeName}}</span>
+                                    <div style="display:flex">
+                                        <span style="font-size:12px;font-weight: bold">实际: {{item2.productionNumber}} 吨</span>
+                                        <div class="num"><span >申报: </span>{{item2.thisYearNumber}} 吨</div>
+                                    </div>
+                                </span>
+                               </div>
+                               <div class="progress" v-if="item.key === 'shuju'&typeSelectedShuJu === 'region'">
+                                   <el-progress :percentage="item2.percentage" color="#7E90C4"  :stroke-width="14"></el-progress>
+                               </div>
+                               <div class="progress" v-if="item.key === 'shuju'&typeSelectedShuJu === 'enter'">
+                                   <el-progress :percentage="item2.percentage" color="#7E90C4"  :stroke-width="14"></el-progress>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                </div>
+                <div v-else style="width: 0; height: 0"></div>
+            </div>
+            <!-- 右侧（产废） -->
+            <div class="map-right" id="map-right" style="display:none;z-index: 9997">
+                <!--  v-if="entMapInfo.entKind === 1" -->
+                <div class="companyDetail" >
+                    <div class="detailTop" :class="entMapInfo.entKind === 1 ? 'chanfei' :(entMapInfo.entKind  === 2?'shouji':(entMapInfo.entKind  === 3?'jingying':''))">
+                        <div class="TopMain">
+                            <div class="topLeft">
+                                <div class="entKindIcon">
+                                    <i class="iconBox"></i>
+                                </div>
+                                <div class="name">{{entMapInfo.name}}</div>
+                            </div>
+                            <div class="TopText">
+                                <div id="dataTop"></div>
+                                <div class="text">{{entMapInfo.standardValue}}</div>
+                                <div class="bian">达标分值</div>
+                            </div>
+
+                        </div>
+                        <!--<div class="company-location" :class="entMapInfo.entKind === 3 ? 'none' : ''">-->
+                        <div class="company-location" >
+                            <i class="video-camera"></i>
+                            <el-link @click="jumpAddres(entMapInfo)" class="videoHref">实时监控</el-link>
+                        </div>
+                        <!-- 贮存信息 -->
+                        <div class="chucunInform">
+                            <!-- 产废企业 -->
+                            <div v-if="entMapInfo.entKind === 1">
+                                <div class="informName">贮存信息</div>
+                                <div class="informMain">
+                                    <div class="informDetail">
+                                        实时库存<span>{{groupStorageCurrentSum}}kg</span>
+                                    </div>
+                                    <div class="informDetail">
+                                        库存比
+                                        <span v-if="stockScale!=null" >{{stockScale}}%</span>
+                                        <span v-else>10%</span>
+                                    </div>
+                                </div>
+                                <el-progress :percentage="stockScale" ></el-progress>
+                            </div>
+                            <!-- 经营企业 -->
+                            <div v-if="entMapInfo.entKind === 2">
+                                <div class="informName">贮存信息</div>
+                                <div class="informMain">
+                                    <div class="informDetail">
+                                        产能<span>30kg</span>
+                                    </div>
+                                    <div class="informDetail">
+                                        累计处置量
+                                        <span >30kg</span>
+                                    </div>
+                                </div>
+                                <div class="informMain">
+                                    <div class="informDetail">
+                                        当前库存<span>{{groupStorageCurrentSum}}kg</span>
+                                    </div>
+                                    <div class="informDetail">
+                                        处置效率
+                                        <span >30%</span>
+                                    </div>
+                                </div>
+                                <!-- <el-progress :percentage="stockScale" ></el-progress> -->
+                            </div>
+                            <!-- 收集企业 -->
+                            <div v-if="entMapInfo.entKind === 3">
+                                <div style="font-size:12px; font-weight:bold;">
+                                    储存危废类型
+                                </div>
+                                <el-scrollbar wrap-class="list" wrap-style="color: red;"
+                                              view-class="view-line" view-style="font-weight: bold;height:100%;"
+                                              :native="false" style="height: 100%;">
+                                    <div style="display:flex;justify-content: space-between">
+                                        <ul v-for="(item, index) in entMapInfo.realTimeStockWithHazardousWasteTypeVo"
+                                            :key="index">
+                                            <li class="text">
+                                                <h3 style="color:#269E4C;font-weight:bold;">{{ item.withHazardousWasteType }}</h3>
+                                                <h3 style="color:#269E4C;font-weight:bold;">{{ item.currentStockNum }}kg</h3>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </el-scrollbar>
+                                <!-- 作业异常 回收及时率 -->
+                                <div class="yichang">
+                                    <div class="" style="display:flex;justify-content: space-between; margin-top:3%">
+                                        <div class="informDetail">
+                                            作业异常<span style="color:red;font-weight:bold">30次</span>
+                                        </div>
+                                        <div class="informDetail">
+                                            回收及时率
+                                            <span v-if="stockScale!=null" style="color:#47CA70;font-weight:bold">34.32%</span>
+                                            <span v-else>10%</span>
+                                        </div>
+                                    </div>
+                                    <!-- <el-progress :percentage="34.32"></el-progress> -->
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 库存信息 -->
+                    <div class="stockInform">
+                       <div>
+                            <div v-if="containeGroupVoList!=null && containeGroupVoList.length>0">
+                                <ul v-for="(item,index) in containeGroupVoList" :key="index">
+                                    <div class="stockName">
+                                        <span>{{item.name}}</span>
+                                        <div class="buttonBox" @click="stockClick()">
+                                            <span v-if="stockOpen">收起</span>
+                                            <span v-else>展开</span>
+                                            <i :class="stockOpen ? 'el-icon-arrow-down' : 'el-icon-arrow-up'"></i>
+                                        </div>
+                                    </div>
+                                    <div v-if="stockOpen" class="wasteBoxMain">
+                                       <div class="wasteBox mt-sm" v-for="(containeInfo,index) in item.containeInfoList" :key="index" >
+                                            <div class="waste-item">
+                                                <span class="waste-name">
+                                                    <!-- {{index + 1}}. {{containeInfo.dictDetailName}} {{containeInfo.dictDetailCode}} -->
+                                                    {{containeInfo.dictDetailName}}
+                                                </span>
+                                                <span class="waste-num" >
+                                                    {{containeInfo.currentAmount}}kg
+                                                </span>
+                                            </div>
+                                            <el-progress :percentage="((containeInfo.currentAmount/groupStorageCurrentSum)*100)" color="#269E4C"></el-progress>
+                                        </div>
+                                    </div>
+                                </ul>
+                            </div>
+                       </div>
+                    </div>
+                    <!-- 最近出入库 -->
+                    <div class="wareHousing">
+                        <div class="informName">最近出入库</div>
+                         <div v-if="entMapInfo.outInlibraryVoList!=null && entMapInfo.outInlibraryVoList.length>0" class="step-box step02">
+                            <ol class="step-list">
+                                <li :class="item.operationTypeStr=='入库'?'is-out':''"
+                                    v-for="(item ,index) in entMapInfo.outInlibraryVoList" :key="index">
+                                    <div class="step-icon">
+                                        <span class="step-num"></span>
+                                    </div>
+                                    <div class="stepCon">
+                                        <div class="lineCon">
+                                            <div class="left time">{{item.storageTime}}</div>
+                                            <div class="right lineName">{{item.operationTypeStr}}</div>
+                                        </div>
+                                        <div class="lineCon">
+                                            <div class="left name">{{item.dictDetailName}} {{item.dictDetailCode}} </div>
+                                            <div class="right">{{item.number}}kg</div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ol>
+                            <div class="ConXian"></div>
+                        </div>
+                        <div v-else>
+                                暂无数据
+                        </div>
+                    </div>
+                    <!-- 今日库存 -->
+                    <div class="kucunEcharsMain">
+                       <div class="kucunTitle">
+                           <span class="informName">{{lineEchartsName}}</span>
+                           <span>
+                               <el-button  v-for="(item, index) in buttonData"
+                                           :key="index"
+                                           type="text"
+                                           @click="entLineEchartChange(item.value)"
+                                           :class="item.value === buttonSelected ? 'selected' : '' " >
+                                   {{item.name}}
+                               </el-button>
+                           </span>
+                       </div>
+                        <div id="kucunEchars"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- 左侧图例 -->
+            <div class="legend-box" style="left: 20px;z-index: 9999 !important;">
+                <div class="legend-hd">图例</div>
+                <div class="legend-bd">
+                    <ul class="legend-list">
+                        <li><span class="tuli"><img style="width: 12px;" src="../../../../static/css/images/map/normalEnterprise.png"></span>产废企业</li>
+                        <li><span class="tuli"><svg width="12" height="18" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><ellipse fill="#E4A801" cx="6" cy="16.2" rx="2.4" ry="1.4"/><ellipse fill-opacity=".237" fill="#000" cx="6" cy="15.8" rx="1.2" ry="1"/><path d="M6 16c1.13-2.585 3.157-4.672 4.243-5.757a6 6 0 10-8.485 0C2.842 11.328 4.97 13.486 6 16z" fill="#F7B500"/><circle fill="#FFF" cx="6" cy="6" r="4.4"/><path d="M4.945 8.8a.728.728 0 01-.715-.72h-.64a.243.243 0 01-.238-.248c0-.129.095-.235.216-.247h.023l.803-.001a.703.703 0 01.55-.27c.222 0 .42.105.551.27h1.282a.703.703 0 01.55-.27c.222 0 .42.105.551.27h.071l.028-.008a1.2 1.2 0 00.475-.26l.031-.03a.91.91 0 00.234-.464l.005-.03v-.887H6.57a.242.242 0 01-.238-.223V3.695H4.007a.242.242 0 01-.238-.224v-.023c0-.13.094-.235.215-.247l.023-.001H6.57c.12 0 .22.093.236.213h1.58c.075 0 .147.038.192.102.221.314.383.646.484.994.093.32.139.668.138 1.042l-.001.095-.002-.001.002.013v1.157a1.429 1.429 0 01-.378.82 1.668 1.668 0 01-.777.436H8.04l-.005.087a.725.725 0 01-.708.642.728.728 0 01-.715-.72l-.955-.001-.005.079a.725.725 0 01-.708.642zm2.383-.99a.243.243 0 00-.239.247c0 .137.107.248.239.248.131 0 .238-.111.238-.248a.243.243 0 00-.238-.247zm-2.383 0a.243.243 0 00-.239.247c0 .137.107.248.239.248.131 0 .238-.111.238-.248a.243.243 0 00-.238-.247zm.467-1.651a.248.248 0 010 .495H3.048a.248.248 0 110-.495h2.364zm0-.99a.248.248 0 010 .495H3.365a.248.248 0 010-.496h2.047zm2.85-1.26l-1.455-.001V5.41h1.914a3.081 3.081 0 00-.115-.758 2.78 2.78 0 00-.322-.709L8.26 3.91zm-2.85.269a.248.248 0 110 .495H3.683a.248.248 0 010-.495h1.729z" fill="#F7B500" fill-rule="nonzero"/></g></svg></span>收集企业</li>
+                        <li><span class="tuli"><svg width="12" height="18" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><ellipse fill="#3DC5A6" cx="6" cy="16.2" rx="2.4" ry="1.4"/><ellipse fill-opacity=".237" fill="#000" cx="6" cy="15.8" rx="1.2" ry="1"/><path d="M6 16c1.13-2.585 3.157-4.672 4.243-5.757a6 6 0 10-8.485 0C2.842 11.328 4.97 13.486 6 16z" fill="#44D7B6"/><circle fill="#FFF" cx="6" cy="6" r="4.4"/><path d="M7.576 5.307l.012.02 1.599 2.78a.24.24 0 01-.185.36H8.98l-1.372.004.296.296c.088.089.093.23.013.326l-.016.018a.244.244 0 01-.326.018l-.017-.016-.683-.682a.243.243 0 01-.014-.327l.016-.017.693-.693a.243.243 0 01.343-.002c.09.089.093.23.014.326l-.016.018-.25.25.897-.002-1.392-2.421a.24.24 0 01.07-.318l.02-.012a.247.247 0 01.32.074zm-3.382 1.15l.008.023.253.945a.243.243 0 01-.17.3.243.243 0 01-.29-.152L3.99 7.55l-.092-.342-.447.779 2.793.005a.24.24 0 01.24.22v.023a.247.247 0 01-.224.24l-.023.001-3.208-.006a.24.24 0 01-.219-.34l.011-.02.684-1.19-.405.108a.243.243 0 01-.29-.151l-.006-.023a.244.244 0 01.147-.291l.022-.008.933-.25a.243.243 0 01.29.152zm2.044-3.556l.013.02.688 1.186.109-.404a.243.243 0 01.276-.175l.023.005c.123.033.199.152.179.274l-.005.022-.25.933a.243.243 0 01-.276.175l-.023-.005-.946-.254a.243.243 0 01-.174-.296.243.243 0 01.276-.175l.023.005.342.092-.45-.777-1.401 2.416a.24.24 0 01-.31.098l-.02-.01a.247.247 0 01-.097-.315l.01-.02 1.61-2.775a.24.24 0 01.403-.02z" fill="#44D7B6" fill-rule="nonzero"/></g></svg></span>经营企业</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div style="z-index: 10000;">
+            <productionVideoHuiKan ref="closeMouleHK"></productionVideoHuiKan>
+        </div>
+
+    </div>
+</template>
+
+<script>
+    import {asyncLoadBaiduMapJsApi} from '../../../components/common/unit/loadBMapApi';
+    import productionVideoHuiKan from "../standingBook/ProductionVideoHuiKanNew";
+    import customOverlay from './js/customOverlay';
+    import entInfoLineEcharts from './js/entInfoLineEcharts'
+    import BreadcrumbComponent from "../../common/unit/BreadcrumbComponent.vue"
+    export default {
+        name: "wfMap",
+        components: {
+            productionVideoHuiKan,
+            BreadcrumbComponent
+        },
+        data(){
+            return {
+                routePath: this.$route.path,
+                isDisabled: false,
+                addressName: '',
+                map: null,
+                markerArr: [],
+                regionMaker: '',
+                areaOptions: [],
+                cityOptions: [],
+                cityCode: "",
+                areaCode: "",
+                cfUnit: "",
+                userRegionName: sessionStorage.getItem('regionName'),
+                regionCode: sessionStorage.getItem('regionCode'),
+                regionLevel: sessionStorage.getItem('regionLevel') == null ? this.AppConfig.appInfo.regionLevel : sessionStorage.getItem('regionLevel'),
+                parentCode: this.AppConfig.appInfo.parentCode,
+                regionName: this.AppConfig.appInfo.regionName,
+                lng: this.AppConfig.appInfo.lng,
+                lat: this.AppConfig.appInfo.lat,
+                lanshanLng:118.353925,
+                lanshanLat:35.059467,
+                centerLevel: 8,
+                initBssw: this.AppConfig.appInfo.bssw,
+                initBsne: this.AppConfig.appInfo.bsne,
+                level: 5,
+                entType: '',
+                registeredAddress: '',
+                userRegionCode: '',
+                zoom: '',
+                dataList: [],
+                typeId:'',
+                entTypeOptions: [{
+                    value: '',
+                    label: '全部企业'
+                }, {
+                    value: '1',
+                    label: '产废企业'
+                }, {
+                    value: '2',
+                    label: '经营企业'
+                }, {
+                    value: '3',
+                    label: '收集企业'
+                }],
+                entTypeOptionsB: [{
+                    value: '',
+                    label: '危废类型'
+                }, {
+                    value: '1',
+                    label: '产废企业'
+                }, {
+                    value: '2',
+                    label: '经营企业'
+                }, {
+                    value: '3',
+                    label: '收集企业'
+                }],
+                regionOptions: [],
+                search: {
+                    entType: '',
+                    regionCode: sessionStorage.getItem('regionCode'),
+                    regionName: this.AppConfig.appInfo.regionName,
+                    regionLevel: sessionStorage.getItem('regionLevel') == null ? this.AppConfig.appInfo.regionLevel : sessionStorage.getItem('regionLevel'),
+                    regionParentCode: ''
+                },
+                outInStackLimit: 5,
+                entMapInfo: {},
+                stockScale: 0,
+                groupStorageCurrentSum: 0,
+                containeGroupVoList: [],
+                // cfImgUrlPath :"../../../../static/css/images/map/chanfei.png",
+                //产废重点
+                // cfAbnormalImgUrlPath: "../../../../static/css/images/map/chanfei_red.png",
+                cfAbnormalImgUrlPath: "../../../../static/css/images/map/normalEnterprise.png",
+                //经营
+                czImgUrlPath: "../../../../static/css/images/map/chuzhi.png",
+                //产废一般F
+                cfNormalImgUrlPath: "../../../../static/css/images/map/normalEnterprise.png",
+                //收集
+                sjImgUrlPath: "../../../../static/css/images/map/yunashu.png",
+                // 库存open
+                stockOpen: true,
+                //企业产废总量
+                count:0,
+                //行政区域边界点的集合
+                boundarySpot:[],
+                //typeSelected=='shuju'时，再次判断时使用
+                typeSelectedShuJu:'region',
+                optionchanfei: {
+                    grid: [
+                         {x: '12%', y: '5%', width: '80%', height: '80%'}
+                    ],
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        data: [],
+                    },
+                    yAxis: {
+                        type: 'value',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: 'rgba(0,0,0,.1)'
+                            }
+                        }
+                    },
+                    series: [{
+                        lineStyle: {
+                            color: 'none',
+                            width: 1
+                        },
+                        smooth: true,
+                        symbol: 'none',
+                        data: [],
+                        type: 'line',
+                        areaStyle: {
+                            color: '#2198E2'
+                        }
+                    }]
+                },
+                optionshouji: {
+                    grid: [
+                         {x: '12%', y: '5%', width: '80%', height: '80%'}
+                    ],
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        data: [],
+                    },
+                    yAxis: {
+                        type: 'value',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: 'rgba(0,0,0,.1)'
+                            }
+                        }
+                    },
+                    series: [{
+                        lineStyle: {
+                            color: 'none',
+                            width: 1
+                        },
+                        smooth: true,
+                        symbol: 'none',
+                        data: [],
+                        type: 'line',
+                        areaStyle: {
+                            color: '#42E4B7'
+                        }
+                    }]
+                },
+                optionjingying: {
+                    grid: [
+                         {x: '12%', y: '5%', width: '80%', height: '80%'}
+                    ],
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        data: [],
+                    },
+                    yAxis: {
+                        type: 'value',
+                        boundaryGap: false,
+                        axisTick: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: 'rgba(0,0,0,.1)'
+                            }
+                        }
+                    },
+                    series: [{
+                        lineStyle: {
+                            color: 'none',
+                            width: 1
+                        },
+                        smooth: true,
+                        symbol: 'none',
+                        data: [],
+                        type: 'line',
+                        areaStyle: {
+                            color: '#F8CE9B'
+                        }
+                    }]
+                },
+                // type类型切换
+                typeData: [
+                    {name: '企业', class: 'el-icon-office-building', key: 'qiye',
+                        children: []
+                    },
+                    {name: '数据', class: 'el-icon-s-data', key: 'shuju',
+                        children: [
+                            {
+                                name: ' 产废量',
+                                value:1,
+                            },
+                            {
+                                name: '贮存量',
+                                value:2,
+                            },
+                            {
+                                name: '转移量',
+                                value:3,
+                            },
+                            {
+                                name: '接收量',
+                                value:4,
+                            },
+                            {
+                                name: '处置量',
+                                value:5,
+                            }
+                        ]
+                    }
+                ],
+                typeSelected: 'qiye',
+                // 企业总和数据
+                enterpriseAndData: {
+                    enterprise:{
+                        key: 'shuju',
+                        title: '危废分类占比',
+                        //危废站产量站比
+                        EnterpriseEchars:{
+                            grid: [
+                                {x: '0%', y: '0%', width: '100%', height: '90%'}
+                            ],
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b} : {c} ({d}%)'
+                            },
+                            legend: {
+                                width: "20%",
+                                right: "1%",
+ 
+                                
+                                top: 'center',
+                                itemWidth: 10,
+                                itemHeight: 10,
+                                data: [],
+                                   formatter: function (name) {
+                        return name.length > 6
+                          ? name.slice(0, 11) + "..."
+                          : name;
+                      },
+                                // formatter: name=>{
+                                //     return name;
+                                // }
+                            },
+                            toolbox: {
+                                show: true
+                            },
+                            series: [
+                                {
+                                    name: '产废量',
+                                    type: 'pie',
+                                    radius: [10, 60],
+                                    center: ['25%', '50%'],
+                                    hoverAnimation:false, //鼠标悬浮是否有区域弹出动画，false:无  true:有
+                                    roseType: 'radius',
+                                    label: {
+                                        show: false
+                                    },
+                                    //value 是控制统计图没个位置的大小的
+                                    data: []
+                                }
+                            ]
+                        },
+                        data: []
+                    },
+                    dataMain:{
+                        key: 'enter',
+                        title: '产废量',
+                        count: 0,
+                        data: []
+                    }
+                },
+                yuanData: 30,
+                dicTypes:[],
+                lineEchartsName:'产废量',
+                entInfo:'',
+                dicType:'',
+                dataCountSource:1,
+                buttonData: [
+                    {name: '本日', value: 1},
+                    {name: '本月', value: 2},
+                    {name: '本年', value: 3}
+                ],
+                buttonSelected : 1,
+                isLoad: true
+            }
+        },
+        methods: {
+            // 绘制行政区域边界
+            drawRegionBoundary(){
+                var _this = this;
+                if(_this.regionOptions.length>0){
+                    for (let i = 0; i < _this.regionOptions.length; i++) {
+                        var regionName = _this.regionOptions[i].name;
+                        var item = _this.regionOptions[i].children;
+                        if(item && item.length>0){
+                            for (let j = 0; j < item.length; j++) {
+                                var itemName = item[j].name;
+                                var drawName = regionName+itemName;
+                                if(drawName=='衡水市冀州区'){
+                                    drawName = '冀州区';
+                                }
+                                customOverlay.queryDistrict(_this,drawName);
+                            }
+                        }else{
+                            customOverlay.queryDistrict(_this,regionName);
+                        }
+                    }
+                    return;
+                }
+                _this.$axios.get('/api/regulatory/regionInfo/getRegionChildrenList', {
+                    params: {
+                        "regionCode": _this.regionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            if(res.data && res.data.length>0){
+                                for (let i = 0; i < res.data.length; i++) {
+                                    var regionName = res.data[i].name;
+                                    var item = res.data[i].children;
+                                    if(item && item.length>0){
+                                        for (let j = 0; j < item.length; j++) {
+                                            var itemName = item[j].name;
+                                            customOverlay.queryDistrict(_this,regionName+itemName);
+                                        }
+                                    }else{
+                                        customOverlay.queryDistrict(_this,regionName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            clearOver(){
+                customOverlay.clearMap("regionInfoMaker",this);
+                customOverlay.clearMap("entInfoMaker",this);
+            },
+            getTEnterpriseHazardousStatisticsWithType(entId){
+                var _this = this;
+                _this.count = 0;
+                _this.typeSelectedShuJu = 'enter';
+                _this.$axios.get('/api/regulatory/AnnualReportStatistics/getTEnterpriseHazardousStatisticsWithType', {
+                    params: {
+                        "entId": entId,
+                        "typeId":_this.typeId
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.enterpriseAndData.dataMain.data=res.data;
+                            for(var i = 0;i<_this.enterpriseAndData.dataMain.data.length;i++){
+                                _this.count += _this.enterpriseAndData.dataMain.data[i].productionNumber;
+                            }
+                            $(".EnterpriseMain").fadeIn();
+                            document.getElementById("enterpriseRight").style.zIndex=9998;
+                        }else{
+                            _this.$message.info(res.info);
+                            $(".EnterpriseMain").fadeOut();
+                            document.getElementById("enterpriseRight").style.zIndex=9997;
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getAnnualReportStatisticsTotal(){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/AnnualReportStatistics/getAnnualReportStatisticsTotal', {
+                    params: {
+                        "regionCode": _this.regionCode,
+                        "typeId":_this.typeId
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.enterpriseAndData.enterprise.data=res.data
+                            _this.addRegionMarker(_this.dataList);//向地图中添加统计点
+//                            _this.enterpriseAndData.enterprise.EnterpriseEchars.series[0].data = res.data;
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            //饼状图数据(废弃)
+            proportionOfOutPutStatistics(){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/AnnualReportStatistics/proportionOfOutPutStatistics', {
+                    params: {
+                        "regionCode": _this.regionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.enterpriseAndData.enterprise.EnterpriseEchars.series[0].data=res.data
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            // 库存展开收起
+            stockClick(){
+                this.stockOpen = !this.stockOpen
+            },
+            // 数据和企业切换
+            typeTab(key){
+                this.typeSelected = key;
+                $(".companyDetail").hide();
+                document.getElementById("map-right").style.zIndex=9997;
+                // this.search.regionCode = sessionStorage.getItem('regionCode')
+            },
+            initPage(){
+                var _this = this;
+                asyncLoadBaiduMapJsApi(_this.AppConfig.appInfo.baiDuMapAk).then(() => {
+                    _this.initBMap();
+                }).catch(err => {
+                    // console.log(err);
+                    // console.log("地图加载失败");
+                })
+            },
+            jumpAddres(item) {
+                this.$refs.closeMouleHK.openVideo(item)
+            },
+            initBMap(){
+                this.createMap().then(val => {
+                  this.drawRegionBoundary();// 绘制行政区划
+                  this.setMapEvent();//设置地图事件
+                  this.addMapControl();//向地图添加控件
+                  var swneArray = customOverlay.getBsswAndNsne(this.map);
+                  this.getRegionCountData('', '', 3, swneArray[0], swneArray[1], this.search.entType, this.search.regionCode);// 请求统计数据
+                }); //创建地图
+            },
+            getBoundary(){
+                var bdary = new BMap.Boundary();
+                ///this.level = 3
+                var _this = this;
+                bdary.get(this.search.regionName, function (rs) {       //获取行政区域
+                    // map.clearOverlays();        //清除地图覆盖物
+                    var count = rs.boundaries.length; //行政区域的点有多少个
+                    var pointArray = [];
+                    for (var i = 0; i < count; i++) {
+                        var ply = new BMap.Polygon(rs.boundaries[i], {
+                            strokeWeight: 2,
+                            strokeColor: "#C04742",
+                            fillColor: '#ffc1076e',
+                            fillOpacity: 0.3
+                        }); //建立多边形覆盖物
+                        _this.map.addOverlay(ply);  //添加覆盖物
+                    }
+                });
+
+            },
+            getRegionBoundary(regionName){
+                var bdary = new BMap.Boundary();
+                ///this.level = 3
+                var _this = this;
+                bdary.get(regionName, function (rs) {       //获取行政区域
+                    //map.clearOverlays();        //清除地图覆盖物
+                    var count = rs.boundaries.length; //行政区域的点有多少个
+                    var pointArray = [];
+                    for (var i = 0; i < count; i++) {
+                        var ply = new BMap.Polygon(rs.boundaries[i], {
+                            strokeWeight: 3,
+                            strokeColor: "#ff0000",
+                            strokeOpacity: 0.5
+                        }); //建立多边形覆盖物
+                        _this.map.addOverlay(ply);  //添加覆盖物
+                    }
+                });
+
+            },
+            searchMap(){
+                // this.map.clearOverlays();//清空地图覆盖物
+                this.clearOver();
+                if (this.$refs.regionElCascader.getCheckedNodes().length < 1) {
+                    this.map.reset();
+                }
+                this.level = 3;
+                if (this.search.regionLevel == 3 || this.search.regionLevel == 2) {
+                    var centerLevel = 10;
+                    if (this.regionLevel == 3) {
+                        centerLevel = 12;
+                    }
+                    if(this.search.regionName!=null && this.search.regionName!=this.userRegionName){
+                        centerLevel = 12;
+                    }
+                    if(this.search.regionName===this.userRegionName){
+                        this.map.centerAndZoom(new BMap.Point(sessionStorage.getItem("lng"),sessionStorage.getItem("lat")), centerLevel);
+                    }else if(this.search.regionName==="兰山区"){
+                        this.map.centerAndZoom(new BMap.Point(this.lanshanLng,this.lanshanLat), centerLevel);
+                    }else{
+                        this.map.centerAndZoom(this.userRegionName + this.search.regionName, centerLevel);
+                    }
+                    var swneArray = customOverlay.getBsswAndNsne(this.map);
+                    var sw = swneArray[0];
+                    var ne = swneArray[1];
+                    // this.getRegionCountData('', '', 3, sw, ne, this.search.entType, this.search.regionCode);// 请求统计数据
+                    if(centerLevel==10){
+                        this.getRegionCountData('', '', 3, sw, ne, this.search.entType, this.search.regionCode);// 请求统计数据
+                    }else if(centerLevel == 12){
+                        this.getEntMaps('', '', sw, ne,this.search.entType, this.search.regionCode);
+                    }
+                }
+            },
+            searchMap1(){
+                // this.map.clearOverlays();//清空地图覆盖物
+                this.clearOver();
+                if (this.$refs.regionElCascader.getCheckedNodes().length < 1) {
+                    this.map.reset();
+                }
+                this.level = 3;
+                if (this.search.regionLevel == 3 || this.search.regionLevel == 2) {
+                    var centerLevel = 10;
+                    if (this.regionLevel == 3) {
+                        centerLevel = 12;
+                    }
+                    if(this.search.regionName!=null && this.search.regionName!=this.userRegionName){
+                        centerLevel = 12;
+                    }
+                    if(this.search.regionName===this.userRegionName){
+                        this.map.centerAndZoom(new BMap.Point(sessionStorage.getItem("lng"),sessionStorage.getItem("lat")), centerLevel);
+                    }else if(this.search.regionName==="兰山区"){
+                        this.map.centerAndZoom(new BMap.Point(this.lanshanLng,this.lanshanLat), centerLevel);
+                    }else{
+                        this.map.centerAndZoom(this.userRegionName + this.search.regionName, centerLevel);
+                    }
+                    var swneArray = customOverlay.getBsswAndNsne(this.map);
+                    var sw = swneArray[0];
+                    var ne = swneArray[1];
+                    if(centerLevel==10){
+                        this.getRegionWfCountData('', '', 3, sw, ne, this.dicType,this.dataCountSource, this.search.regionCode);// 请求统计数据
+                        this.getRegionWfPieChartCountData('', '', 3, sw, ne, this.dicType,this.dataCountSource, this.search.regionCode);// 请求统计数据
+                    }else if(centerLevel == 12){
+                        this.getWfEntMaps('', '', sw, ne, this.search.entType, this.search.regionCode);
+                    }
+                }
+            },
+            initEntInfo(){
+                this.entMapInfo = {};
+                this.stockScale = 0;
+                this.groupStorageCurrentSum = 0;
+                this.containeGroupVoList = [];
+                this.stockOpen = true;
+            },
+            createMap(){
+              var self = this;
+              return new Promise((resolve, reject) => {
+                var map = new BMap.Map("wfMap",
+                    {
+                      // minZoom:9,// 显示级别
+                      // maxZoom: 14,
+                      enableMapClick: false// 构造底图时，关闭底图可点功能
+                    }
+                );//在百度地图容器中创建一个地图
+                var point = new BMap.Point(this.lng, this.lat);//定义一个中心点坐标
+                var centerLevel = 10;
+                if (self.regionLevel == 3) {
+                  centerLevel = 12;
+                }
+                map.centerAndZoom(new BMap.Point(sessionStorage.getItem("lng") == null ? this.lng : sessionStorage.getItem("lng"), sessionStorage.getItem("lat") == null ? this.lat + 0.2 : sessionStorage.getItem("lat")), centerLevel);
+
+                // window.map = map;//将map变量存储在全局
+
+                self.map = map;
+                map.setMapStyle({style: 'grayscale'})
+                if(self.isLoad){
+                  // 监听停止拖拽地图时可视区域四角
+                  map.addEventListener('dragend', function (e) {
+                    if (self.level != 3) {
+                      self.searchData();
+                    } else {
+                      return;
+                    }
+                  });
+                  // 地图加载完毕
+                  map.addEventListener("tilesloaded", function () {
+                    let zoom = map.getZoom();
+                    if (zoom < 16) {
+                      self.level = '';
+                    }
+                    // 控制右侧弹窗
+                    if(zoom<16){
+                      // 显示区域统计弹窗
+                      if(self.typeSelected === 'qiye'){
+                        $(".companyDetail").hide();
+                        document.getElementById("map-right").style.zIndex=9997;
+                        self.stockOpen = true;
+                      }else if(self.typeSelected === 'shuju'){
+                        $(".EnterpriseMain").fadeIn();
+                        document.getElementById("enterpriseRight").style.zIndex=9998;
+                      }
+                    }else{
+                      // 隐藏区域统计弹窗
+                      // 显示区域统计弹窗
+                      if(self.typeSelected === 'qiye'){
+                        $(".companyDetail").hide();
+                        document.getElementById("map-right").style.zIndex=9997;
+                        self.stockOpen = true;
+                      }else if(self.typeSelected === 'shuju'){
+                        $(".EnterpriseMain").fadeOut();
+                        document.getElementById("enterpriseRight").style.zIndex=9997;
+                      }
+                    }
+                  });
+                  // 监听层级
+                  map.addEventListener('zoomend', function (e) {
+                    let zoom = map.getZoom();
+                    customOverlay.clearMap("regionBoundaryOver",self);
+                    if(zoom>=16){
+                      customOverlay.queryDistrict(self,self.userRegionName);
+                    }else if(zoom==16){
+                      var name = self.userRegionName;
+                      if(self.search.regionName==name || self.search.regionName=='' || self.search.regionName==null){
+                        self.drawRegionBoundary();
+                      }else{
+                        var drawName = name+self.search.regionName;
+                        if(drawName=='衡水市冀州区'){
+                          drawName = '冀州区';
+                        }
+                        customOverlay.queryDistrict(self,drawName);
+                      }
+                    }else{
+                      var name = self.userRegionName;
+                      if(self.search.regionName==name || self.search.regionName=='' || self.search.regionName==null){
+                        self.drawRegionBoundary();
+                      }else{
+                        var drawName = name+self.search.regionName;
+                        if(drawName=='衡水市冀州区'){
+                          drawName = '冀州区';
+                        }
+                        customOverlay.queryDistrict(self,drawName);
+                      }
+                    }
+                    if (self.level != 3) {
+                      self.searchData();
+                    } else {
+                      return;
+                    }
+                  });
+                }
+                resolve(true);
+              })
+
+
+            },
+            searchData(){
+                // map.clearOverlays();//清空地图覆盖物
+                let zoom = this.map.getZoom();
+                var self = this;
+                self.clearOver();
+                var entType = self.search.entType;
+                var typeId = self.typeId;
+                //alert("当前地图层级为:"+zoom+"级");
+                var swneArray = customOverlay.getBsswAndNsne(this.map);
+                var sw = swneArray[0];
+                var ne = swneArray[1];
+                if (zoom >= 1 && zoom <= 15 && self.level != 3) {
+                    if (zoom <= 15) {// 区县
+                        if(self.typeSelected === 'qiye'){
+                            self.getRegionCountData('', '', 3, sw, ne, entType, self.search.regionCode);
+                        }
+                        if(self.typeSelected === 'shuju'){
+                            self.typeSelectedShuJu = 'region';
+                            // $(".EnterpriseMain").fadeIn();
+                            // self.getAnnualReportStatisticsTotal(self.search.regionCode,typeId);
+                            self.getRegionWfCountData('', '', 3, sw, ne, self.dicType,self.dataCountSource, self.search.regionCode);// 请求统计数据
+                            self.getRegionWfPieChartCountData('', '', 3, sw, ne, self.dicType,self.dataCountSource, self.search.regionCode);// 请求统计数据
+                        }
+                    } else if (zoom > 14 && zoom <= 15) {
+                        // $(".EnterpriseMain").fadeOut();
+                        self.typeSelectedShuJu = 'enter';
+                        if(self.typeSelected === 'qiye'){
+                            self.getEntMaps('', '', sw, ne, entType, self.search.regionCode);
+                        }
+                        if(self.typeSelected === 'shuju'){
+                            self.getWfEntMaps('', '', sw, ne, entType, self.search.regionCode);
+                        }
+                    }
+                } else {
+                    //console.log("层级大于12级,不再刷新数据");
+                    if(self.typeSelected === 'qiye'){
+                        self.getEntMaps('', '', sw, ne, entType, self.search.regionCode);
+                    }
+                    if(self.typeSelected === 'shuju'){
+                        self.getWfEntMaps('', '', sw, ne, entType, self.search.regionCode);
+                    }
+                }
+            },
+            getEntMaps(regionCode, regionName, bssw, bsne, entType, userRegionCode) {
+                // map.clearOverlays();//清空地图覆盖物
+                var _this = this;
+                _this.clearOver();
+                _this.$axios.get('/api/regulatory/index/getEntMaps', {
+                    params: {
+                        "qxCode": regionCode,// 行政区域code
+                        "czCode": '',// 无用
+                        "entType": entType, // 企业类型
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.dataList = res.data;
+                            _this.addEntMaker(res.data);//向地图中添加统计点
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getWfEntMaps(regionCode, regionName, bssw, bsne, entType, userRegionCode) {
+                // map.clearOverlays();//清空地图覆盖物
+                var _this = this;
+                _this.clearOver();
+                _this.$axios.get('/api/regulatory/index/getWfEntMaps', {
+                    params: {
+                        "qxCode": regionCode,// 行政区域code
+                        "wfType": '',// 危废类型,危废Id
+                        "dataType": _this.dataCountSource, // 数据类型[产废量-1;贮存量-2;转移量-3;接收量-4;处置量-5;]
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.dataList = res.data;
+                            _this.addEntMaker(res.data);//向地图中添加统计点
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            setMapEvent(){
+                this.map.enableDragging();//启用地图拖拽事件，默认启用(可不写)
+                this.map.enableScrollWheelZoom();//启用地图滚轮放大缩小
+                this.map.enableDoubleClickZoom();//启用鼠标双击放大，默认启用(可不写)
+                this.map.enableKeyboard();//启用键盘上下左右键移动地图
+                this.map.enableInertialDragging();
+                this.map.enableContinuousZoom();
+                /*function showInfo(e){
+                    alert(e.point.lng + ", " + e.point.lat);
+                }
+                // 地图点击事件
+                this.map.addEventListener("click", showInfo);*/
+            },
+            addMapControl(){
+                //向地图中添加缩放控件
+                var ctrl_nav = new BMap.NavigationControl({
+                    anchor: BMAP_ANCHOR_TOP_LEFT,
+                    type: BMAP_NAVIGATION_CONTROL_LARGE
+                });
+                //向地图中添加缩略图控件
+                var ctrl_ove = new BMap.OverviewMapControl({anchor: BMAP_ANCHOR_BOTTOM_RIGHT, isOpen: 1});
+                //向地图中添加比例尺控件
+                var ctrl_sca = new BMap.ScaleControl({anchor: BMAP_ANCHOR_BOTTOM_LEFT});
+                // 城市列表控件
+                var size = new BMap.Size(10, 20);
+                var ctrl_cti = new BMap.CityListControl({
+                    anchor: BMAP_ANCHOR_TOP_LEFT,
+                    offset: size,
+                });
+            },
+            getRegionCountData(parentRegionCode, thisRegionCode, level, bssw, bsne, entType, userRegionCode){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/index/getRegionCountData', {
+                    params: {
+                        "level": level,// 行政区域等级
+                        "parentRegionCode": parentRegionCode,// 父级点位code
+                        "thisRegionCode": thisRegionCode,// 当前
+                        "entType": entType, // 企业类型
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.dataList = res.data;
+                            _this.addRegionMarker(res.data);//向地图中添加统计点
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getRegionWfCountData(parentRegionCode, thisRegionCode, level, bssw, bsne, wfType, dataType, userRegionCode){
+                var _this = this;
+                _this.enterpriseAndData.enterprise.data=[];
+                _this.$axios.get('/api/regulatory/index/getRegionWfCountData', {
+                    params: {
+                        "level": level,// 行政区域等级
+                        "parentRegionCode": parentRegionCode,// 父级点位code
+                        "thisRegionCode": thisRegionCode,// 当前
+                        "wfType": wfType, // 危废类型,危废Id
+                        "dataType": dataType, // 数据类型[产废量-1;贮存量-2;转移量-3;接收量-4;处置量-5;]
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            if(!res.data || res.data.length<1){
+                              _this.$message.info("暂无数据!");
+                              return
+                            }
+                            _this.addRegionMarker(res.data);//向地图中添加统计点
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getRegionWfPieChartCountData(parentRegionCode, thisRegionCode, level, bssw, bsne, wfType, dataType, userRegionCode){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/index/getRegionWfPieChartCountData', {
+                    params: {
+                        "level": level,// 行政区域等级
+                        "parentRegionCode": parentRegionCode,// 父级点位code
+                        "thisRegionCode": thisRegionCode,// 当前
+                        "wfType": wfType, // 危废类型,危废Id
+                        "dataType": dataType, // 数据类型[产废量-1;贮存量-2;转移量-3;接收量-4;处置量-5;]
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            // 渲染饼图
+                            let harzardousTypeList= sessionStorage.getItem('harzardousTypeList')
+                            let harzardousList = JSON.parse(harzardousTypeList)
+                           res.data.forEach((item)=>{
+            harzardousList.forEach(ele=>{
+                if(item.name==ele.typeName){
+item.name=ele.dicTypeExplain
+                }
+            })      
+                           })   
+                            _this.enterpriseAndData.enterprise.EnterpriseEchars.series[0].data=res.data;
+                            let labelData = [];
+                            if(res.data){
+                                res.data.map(item=>{
+                                    const {name,value} = item;
+                                    labelData.push(name);
+                                })
+                            }
+                            _this.enterpriseAndData.enterprise.EnterpriseEchars.legend.data = labelData;
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getRegionEnterpriseData(parentRegionCode, thisRegionCode, level, bssw, bsne, entType, userRegionCode){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/index/getRegionCountData', {
+                    params: {
+                        "level": level,// 行政区域等级
+                        "parentRegionCode": parentRegionCode,// 父级点位code
+                        "thisRegionCode": thisRegionCode,// 当前
+                        "entType": entType, // 企业类型
+                        "bssw": bssw,// 可视区域西南角经纬度
+                        "bsne": bsne, // 可视区域东北角经纬度
+                        "userRegionCode": userRegionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.dataList = res.data;
+                            _this.addRegionMarker(res.data);//向地图中添加统计点
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            // 点击进入的页面
+            addEntMaker(dataList){
+                if(this.typeSelected === 'qiye'){
+                    dataList.map(item =>{
+                        //是否异常，分值, 类型, 经纬度
+                        const {isAlarm,name, standardValue, entKind, lat, lng} = item
+                        // console.log(entKind)
+                        var mycfIcon = new BMap.Icon(this.cfAbnormalImgUrlPath, new BMap.Size(30, 50))
+                        var myczIcon = new BMap.Icon(this.czImgUrlPath, new BMap.Size(30, 50));
+                        var mysjIcon = new BMap.Icon(this.sjImgUrlPath, new BMap.Size(30, 50));
+                        var entInfoMaker = null;
+                        if(entKind == 1){
+                            entInfoMaker = new BMap.Marker(new BMap.Point(lng, lat), {icon: mycfIcon});  // 创建标注
+                        }
+                        if(entKind == 2){
+                            entInfoMaker = new BMap.Marker(new BMap.Point(lng, lat), {icon: myczIcon});  // 创建标注
+                        }
+                        if(entKind == 3){
+                            entInfoMaker = new BMap.Marker(new BMap.Point(lng, lat), {icon: mysjIcon});  // 创建标注
+                        }
+                        var spanClass = "IconScore1";
+                        if(standardValue!=null){
+                            if(50<=standardValue && standardValue<=60){
+                                spanClass = "IconScore1";
+                            }else if(40<=standardValue && standardValue<=50){
+                                spanClass = "IconScore2";
+                            }else if(standardValue<40){
+                                spanClass = "IconScore3";
+                            }
+                        }
+                        if(isAlarm === true){
+                           // console.log(item)
+                           var labelText = `<div class= "IConMain yichang" onclick=entClickInfo(`+JSON.stringify(item).replace(/\\"/g,"'")+`)>
+                                <div class="iconLine">
+                                    <span class=${spanClass}>${standardValue?standardValue:''}</span>
+                                    <span> ${name} </span>
+                                </div>
+                                <div class="sanjiao"></div>
+                            </div>`
+                            // 添加区域信息点位
+                        var label = '';
+                        label = new BMap.Label(labelText, {
+                            offset: new BMap.Size(-56, -53)
+                        });
+                        label.setStyle({
+                            background: 'none', color: '#red', border: 'none'//只要对label样式进行设置就可达到在标注图标上显示数字的效果
+                        });
+                        entInfoMaker.setLabel(label);// 给点位添加文本
+                        var _this = this;
+                        // 全局,待优化
+                        window.entClickInfo = function (item) {
+                            var entInfo = JSON.parse(item.replace(/'/g, '"'));
+                            _this.entInfoLook(entInfo);
+                        }
+
+                        entInfoMaker.addEventListener("mouseover", function () {
+                            // var entInfoMakerLabel = this.getLabel();
+                            this.setTop(true);
+                        });
+                        entInfoMaker.addEventListener("mouseout", function (e) {
+                            // var entInfoMakerLabel = this.getLabel();
+                            this.setTop(false);
+                            // entInfoMakerLabel.hide()
+                        });
+
+                        }if(isAlarm === false){
+                            // console.log(item)
+                            var labelText = `<div class= "IConMain " onclick=entClickInfo('`+JSON.stringify(item).replace(/\\"/g,"'")+`')>
+                                <div class="iconLine">
+                                    <span class=${spanClass}>${standardValue?standardValue:''}</span>
+                                    <span> ${name} </span>
+                                </div>
+                                <div class="sanjiao"></div>
+                            </div>`
+                                // 添加区域信息点位
+                        var label = '';
+                        label = new BMap.Label(labelText, {
+                            offset: new BMap.Size(-56, -53)
+                        });
+                        label.setStyle({
+                            background: 'none', color: '#red', border: 'none'//只要对label样式进行设置就可达到在标注图标上显示数字的效果
+                        });
+                        entInfoMaker.setLabel(label);// 给点位添加文本
+                        var _this = this;
+                        // 全局,待优化
+                        window.entClickInfo = function (item) {
+                            var entInfo = JSON.parse(item.replace(/'/g, '"'));
+                            _this.entInfoLook(entInfo);
+                        }
+                        // label.hide();默认隐藏label
+                        entInfoMaker.addEventListener("mouseover", function () {
+                            var entInfoMakerLabel = this.getLabel();
+                            // entInfoMakerLabel.show()
+                            this.setTop(true);
+                        });
+                        entInfoMaker.addEventListener("mouseout", function (e) {
+                            var entInfoMakerLabel = this.getLabel();
+                            // entInfoMakerLabel.hide()
+                            this.setTop(false);
+                        });
+                        }
+                        this.map.addOverlay(entInfoMaker);// 添加点
+                        entInfoMaker.imei = "entInfoMaker";
+                        this.entMakerClickHandler(entInfoMaker, item);// 添加点击事件
+                        // console.log(item)
+                    })
+                }
+                if(this.typeSelected === 'shuju') {
+                    var count = 1;
+                    var i = 0;
+                    var temp = [];
+                    // 过滤空值
+                    for(let j in dataList){
+                        if(dataList[j].yearAmount && dataList[j].yearAmount!=0){
+                            temp.push(dataList[j]);
+                        }
+                    }
+                    dataList = [];
+                    dataList = temp;
+                    dataList.map(item => {
+                        const {lng, lat, name, yearAmount, entId} = item;
+                        i++;
+                        // 高度:最低20px;最高120px;
+                        var height = 20;
+                        var yearNum = (yearAmount?yearAmount:0)/1000;
+                        var count = parseInt((yearNum).toFixed(2));
+                        height = height+parseInt(count.toFixed(0));
+                        if(height>120){
+                            height=120;
+                        }
+                        let _level = 'map-sign level-02';
+                        // 前五使用红色
+                        if(i<=5){
+                            _level = 'map-sign level-04';
+                        }else{
+                            _level = 'map-sign level-02';
+                        }
+                        customOverlay.drawWfEntCountDataCylinder(item,_level,height,this);
+                        // console.log(count++);
+                    })
+                }
+            },
+            entMakerClickHandler(entInfoMaker, entInfo){
+                var _this = this;
+                entInfoMaker.addEventListener("click", function (e) {
+                    _this.entInfoLook(entInfo);
+                })
+            },
+            //数据界面点击企业，展示详情
+            entMakerClickHandlerShuJu(entInfoMaker, entId){
+                var _this = this;
+                entInfoMaker.addEventListener("click", function (e) {
+                    _this.getTEnterpriseHazardousStatisticsWithType(entId);
+                })
+            },
+            //点击详情页面的点
+            entInfoLook(entInfo){
+                $(".companyDetail").hide();
+                document.getElementById("map-right").style.zIndex=9998;
+                var _this = this;
+                _this.entInfo = entInfo;
+                _this.registeredAddress = '';
+                _this.initEntInfo();
+                // 查询企业详情
+                _this.$axios.get('/api/regulatory/index/getEntMapInfo', {
+                    params: {
+                        "entId": entInfo.entId,
+                        "outInStackLimit": _this.outInStackLimit
+                    }
+                }).then((res)=> {
+                        if (res.code == 0) {
+                            _this.entMapInfo = res.data;
+                            $(".companyDetail").fadeIn();
+                            if(_this.entInfo.entKind==1){
+                                _this.lineEchartsName='产废量';
+                            }else if(_this.entInfo.entKind==2){
+                                _this.lineEchartsName='接收量';
+                            }else if(_this.entInfo.entKind==3){
+                                _this.lineEchartsName='转移量';
+                            }
+                            this.buttonSelected = 1;
+                            let data = res.data.standardValue;
+                            this.yuanData = res.data.standardValue;
+                            var myChart = echarts.init(document.getElementById('dataTop'))
+                            if(res.data.entKind == 1){
+                                var color1 = '#56B2E9'
+                                var color2 = '#2198E2'
+                                var color3 = '#2198E2'
+                            }if(res.data.entKind == 2){
+                                var color1 = '#46C96F'
+                                var color2 = '#46C96F'
+                                var color3 = '#46C96F'
+                            }if(res.data.entKind == 3){
+                                var color1 = '#FFF6D5'
+                                var color2 = '#F7B500'
+                                var color3 = '#F7B500'
+                            }
+                            _this.$nextTick(()=>{
+                                entInfoLineEcharts(_this,res.data.lineEchartsVo?res.data.lineEchartsVo.xdata:[],res.data.lineEchartsVo?res.data.lineEchartsVo.ydata[0]:[],res.data.entKind);
+                            });
+                            // console.log(color1)
+                            let option = {
+                                grid: [
+                                    {x: '0%', y: '20%', width: '100%', height: '90%'}
+                                ],
+                                series: [
+                                    {
+                                        name: '外部刻度',
+                                        type: 'gauge',
+                                        center: ['50%', '50%'],
+                                        radius: '70%',
+                                        min: 0, //最小刻度
+                                        max: 60, //最大刻度
+                                        splitNumber: 10, //刻度数量
+                                        startAngle: 225,
+                                        endAngle: -45,
+                                        axisLine: {
+                                            show: true,
+                                            lineStyle: {
+                                                color: [
+                                                    [ 100 / 100,
+                                                    new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                                        {
+                                                            offset: 0,
+                                                            color: color1 // 0% 处的颜色
+                                                        },
+                                                        {
+                                                            offset: 1,
+                                                            color: color2 // 100% 处的颜色
+                                                        }
+                                                        ])
+                                                    ], [1, "none"]
+                                                ],
+                                                width: 1
+                                            }
+                                        },
+                                        //仪表盘轴线
+                                        axisLabel: {
+                                            show: false,
+                                        }, //刻度标签。
+                                        axisTick: {
+                                            show: true,
+                                            splitNumber: 5,
+                                            lineStyle: {
+                                                color: color3, //用颜色渐变函数不起作用
+                                                width: 1,
+                                            },
+                                            length: -8
+                                        }, //刻度样式
+                                        splitLine: {
+                                            show: true,
+                                            length: -13,
+                                            splitNumber: 2,
+                                            lineStyle: {
+                                                color: color3, //用颜色渐变函数不起作用
+                                            }
+                                        }, //分隔线样式
+                                        detail: {
+                                            show: false
+                                        },
+                                        pointer: {
+                                            show: false
+                                        }
+                                    },
+                                    {
+                                        name: "内部进度条",
+                                        type: "gauge",
+                                        center: ['50%', '50%'],
+                                        radius: '90%',
+                                        splitNumber: 0, //刻度数量
+                                        startAngle: 225,
+                                        max: 60,
+                                        endAngle: -50,
+                                        axisLine: {
+                                            lineStyle: {
+                                                color: [
+                                                    [ data / 60,
+                                                    new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                                        {
+                                                            offset: 0,
+                                                            color: color1 // 0% 处的颜色
+                                                        },
+                                                        {
+                                                            offset: 1,
+                                                            color: color2 // 100% 处的颜色
+                                                        }
+                                                    ])
+                                                    ], [1, "none"]
+                                                ],
+                                                shadowBlur: 5,
+                                                shadowColor: color3,
+                                                width: 10
+                                            }
+                                        },
+                                        axisLabel: {
+                                            show: false,
+                                        },
+                                        axisTick: {
+                                            show: false,
+
+                                        },
+                                        splitLine: {
+                                            show: false,
+                                        },
+
+                                        pointer: {
+                                            show: false,
+                                        },
+                                    },
+                                ]
+                            }
+                            myChart.setOption(option)
+                            _this.registeredAddress = res.data.registeredAddress.length > 12 ? res.data.registeredAddress.substring(0, 12) + "..." : res.data.registeredAddress;
+                            if (res.data && res.data.realTimeStockVo) {
+                                // _this.containeGroupVoList = res.data.realTimeStockVo.containeGroupVoList;
+                                _this.setContaineGroupVoList(res.data.realTimeStockVo.containeGroupVoList,res.data.realTimeStockVo.stockScale);
+                                _this.stockScale = res.data.realTimeStockVo.stockScale;
+                                _this.groupStorageCurrentSum = res.data.realTimeStockVo.currentStockNum;
+                            }
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+
+            },
+            setContaineGroupVoList(dataList,count){
+                var items = {};
+                items.name = "危废占比";
+                items.containeInfoList = [];
+                var allData = [];
+                if(dataList && dataList.length>0){
+                    // 设施列表
+                    for (let i = 0; i < dataList.length; i++) {
+                        var itemList = dataList[i].containeInfoList;
+                        if(itemList && itemList.length>0){
+                            for (let j = 0; j < itemList.length; j++) {
+                                allData.push(itemList[j]);
+                            }
+                        }
+                    }
+                }
+                var nowData = [];
+                if (allData && allData.length>0){
+                    for (let i = 0; i < allData.length; i++) {
+                        var dictDetailName = allData[i].dictDetailName;
+                        var obj = {};
+                        obj.dictDetailName = dictDetailName;
+                        obj.dictDetailCode = allData[i].dictDetailCode;
+                        obj.currentAmount = allData[i].currentAmount;
+                        for (let j = i+1; j < allData.length; j++) {
+                            var dictDetailNameBak = allData[j].dictDetailName;
+                            if(dictDetailName==dictDetailNameBak){
+                                obj.currentAmount+=allData[j].currentAmount;
+                            }
+                        }
+                        nowData.push(obj);
+                    }
+                }
+                var result = [];
+                var obj = {};
+                for(var i =0; i<nowData.length; i++){
+                    if(!obj[nowData[i].dictDetailName]){
+                        result.push(nowData[i]);
+                        obj[nowData[i].dictDetailName] = true;
+                    }
+                }
+                result.sort((a,b)=>{
+                    return b.currentAmount - a.currentAmount;
+                });
+                items.containeInfoList = result;
+                this.containeGroupVoList.push(items);
+            },
+            //页面初始化显示
+            addRegionMarker(dataList){
+                if(dataList==null || dataList.length<1){
+                    return;
+                }
+                dataList.sort((a,b)=>{
+                    return b.count - a.count;
+                });
+                var _this = this;
+                // $(".EnterpriseMain").fadeIn();
+                /*dataList.forEach(item => {
+                    const {lng, lat, regionName, total, } = item;
+                    let infoA = item.lng;
+                    let infoB = item.lat;
+                    // 添加区域信息点位
+                    var regionInfoMaker = new BMap.Marker(new BMap.Point(infoA, infoB));  // 创建标注
+                });*/
+                _this.createDataEnterprise(dataList);
+            },
+            // 第一屏页面企业显示页面
+            createDataEnterprise(dataList){
+                var _this = this;
+                // $(".EnterpriseMain").fadeIn();
+                if(_this.typeSelected === 'qiye'){
+                    for (var i = 0; i < dataList.length; i++) {//遍历
+                        if (dataList[i].list.length != 0) {
+                            // 过滤0数据
+                            var infoA = dataList[i].lng;
+                            var infoB = dataList[i].lat;
+                            var code = dataList[i].regionCode
+                            var entCount = dataList[i].list
+                            var myIcon = '';
+                            if (entCount.length == 1) {
+                                myIcon = new BMap.Icon("../../../../static/css/images/map/whiteBg@2x.png", new BMap.Size(135, 97));
+                            }
+                            if (entCount.length == 2) {
+                                myIcon = new BMap.Icon("../../../../static/css/images/map/whiteBg3@2x (1).png", new BMap.Size(135, 130));
+                            }
+                            if (entCount.length == 3) {
+                                myIcon = new BMap.Icon("../../../../static/css/images/map/whiteBg3@2x.png", new BMap.Size(135, 165));
+                            }
+                            // 添加区域信息点位
+                            var regionInfoMaker = new BMap.Marker(new BMap.Point(infoA, infoB), {icon: myIcon});  // 创建标注
+                            var labelContext = '';
+                            var str = ''
+                            for (var j = 0; j < entCount.length; j++) {
+                                str += entCount[j].entKind + ':&nbsp;&nbsp;' + entCount[j].count + '家</br>'
+                            }
+                            labelContext = '<div><em style=" display:block; padding-top:2px;padding-left:17px;margin:-3px auto;font-size:20px;line-height:32px;position: absolute;">' + str + '</em><div style="position: absolute;top:-66px;display: block;padding-left: 6px;padding-top: 5px;padding-right: 8px;height: 50px;width:135px;border: 2px solid #cf9236;margin-top: 16px;margin-left: -2px;font-size: 25px;border-radius: 5px;background-color: #ffb700;color: #fff;text-align:center ">' + dataList[i].regionName + '</div></div>';
+                            var label = new BMap.Label(labelContext, {
+                                offset: new BMap.Size(1, 50)
+                            });
+                            label.setStyle({
+                                background: 'none', color: '#red', border: 'none'//只要对label样式进行设置就可达到在标注图标上显示数字的效果
+                            });
+                            regionInfoMaker.setLabel(label);// 给点位添加文本
+                            // 鼠标经过时
+                            regionInfoMaker.addEventListener("mouseover", function (e) {
+                                this.setTop(true);
+                            });
+                            // 鼠标离开时
+                            regionInfoMaker.addEventListener("mouseout", function (e) {
+                                this.setTop(false);
+                            });
+                            this.map.addOverlay(regionInfoMaker);// 添加点
+                            regionInfoMaker.imei = "regionInfoMaker";
+                            _this.regionCodeMakerClickHandler(regionInfoMaker, dataList[i]);// 添加点击事件
+                        }
+                    }
+                }if(_this.typeSelected === 'shuju'){
+                    _this.setRightWindowInfo(dataList);
+                    var temp = [];
+                    // 过滤空值
+                    for(let i in dataList){
+                        if(dataList[i].count && dataList[i].count!=0){
+                            temp.push(dataList[i]);
+                        }
+                    }
+                    dataList = [];
+                    dataList = temp;
+                    for(let i=0;i<dataList.length;i++){
+                        // 高度:最低20px;最高120px;
+                        var height = 20;
+                        var yearAmount = dataList[i].count;
+                        var yearNum = (yearAmount?yearAmount:0)/1000;
+                        var count = parseInt((yearNum).toFixed(2));
+                        height = height+parseInt(count.toFixed(0));
+                        if(height>120){
+                            height=120;
+                        }
+                        let _level = 'map-sign level-02';
+                        // 前五使用红色
+                        if(i<=4){
+                            _level = 'map-sign level-04';
+                        }else{
+                            _level = 'map-sign level-02';
+                        }
+                        customOverlay.drawWfRegionCountDataCylinder(dataList[i],_level,height,_this);
+                    }
+                }
+            },
+            setRightWindowInfo(dataList){
+                var data = [];
+                if(dataList && dataList.length>0){
+                    for (let i = 0; i < dataList.length; i++) {
+                        var obj = {};
+                        obj.regionName = dataList[i].regionName;
+                        obj.total = dataList[i].count;
+                        obj.percentage = 0;
+                        data.push(obj);
+                    }
+                }
+                data.sort((a,b)=>{
+                    return b.total - a.total;
+                });
+                if(data && data.length>0){
+                    var countToken = data[0].total?data[0].total:0;
+                    if(countToken!=0){
+                        for (let i = 0; i <data.length; i++) {
+                            data[i].percentage = ((data[i].total?data[i].total:0)/countToken)*100;
+                        }
+                    }
+                }
+                this.enterpriseAndData.enterprise.data=data;
+            },
+            // 初始化显示的白色部分显示的具体内容
+            regionCodeMakerClickHandler(regionInfoMaker, regionInfo){
+                var self = this;
+                regionInfoMaker.addEventListener("click", function (e) {
+                    self.regionInfoMakerClick(regionInfo);
+                })
+            },
+            regionInfoMakerClick(regionInfo){
+                var self = this;
+                var entType = self.search.entType;
+                self.level = 3;
+                // 查询当前点位下级点位 省查市
+                // map.clearOverlays();//清空地图覆盖物
+                self.clearOver();
+                // 设置可视区域
+                var thisLevel = regionInfo.level;
+                if (thisLevel == 2 || thisLevel == 1) {// 市
+                    // 查询该市下区县
+                    self.map.centerAndZoom(new BMap.Point(regionInfo.lng, regionInfo.lat), 9);
+                    var swneArray = customOverlay.getBsswAndNsne(this.map);
+                    var sw = swneArray[0];
+                    var ne = swneArray[1];
+                    if(this.typeSelected === 'qiye'){
+                        self.getRegionCountData(regionInfo.regionCode, '', 3, sw, ne, entType, self.search.regionCode);
+                    }else {
+                        // self.getAnnualReportStatisticsTotalWithRegion(regionInfo.regionCode);
+                        self.getRegionWfCountData(regionInfo.regionCode, '', 3, sw, ne,  self.dicType,self.dataCountSource, self.search.regionCode);// 请求统计数据
+                        self.getRegionWfPieChartCountData(regionInfo.regionCode, '', 3, sw, ne,  self.dicType,self.dataCountSource, self.search.regionCode);// 请求统计数据
+                    }
+                } else if (thisLevel == 3) {// 区县
+                    if(regionInfo.regionCode===371302){
+                        self.map.centerAndZoom(new BMap.Point(self.lanshanLng,self.lanshanLat), 16);
+                    }else {
+                        self.map.centerAndZoom(new BMap.Point(regionInfo.lng, regionInfo.lat), 16);
+                    }
+                    var swneArray = customOverlay.getBsswAndNsne(this.map);
+                    var sw = swneArray[0];
+                    var ne = swneArray[1];
+                    // 查询企业点位数据
+                    // console.log("显示")
+                    if(self.typeSelected === 'qiye'){
+                        self.getIndexMaps(regionInfo.regionCode, entType,sw, ne);
+                    }
+                    if(self.typeSelected === 'shuju'){
+                        self.getIndexWfMaps(regionInfo.regionCode,self.dicType,self.dataCountSource,sw, ne);
+                    }
+
+                }
+            },
+            //点击页面具体的显示一个页面的小点
+            getIndexMaps(regionCode, entType,sw, ne) {
+                // map.clearOverlays();//清空地图覆盖物
+                var _this = this;
+                _this.clearOver();
+                _this.$axios.get('/api/regulatory/index/getIndexMaps', {
+                    params: {
+                        "regionCode": regionCode,
+                        "entType": entType,
+                        "bssw": sw,
+                        "bsne": ne
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            var entCountData = res.data;
+                            if (entCountData.length > 0) {
+                                _this.addEntMaker(res.data);
+                            }
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            //点击页面具体的显示一个页面的小点
+            getIndexWfMaps(regionCode, wfType,dataType,sw, ne) {
+                // map.clearOverlays();//清空地图覆盖物
+                var _this = this;
+                _this.clearOver();
+                _this.$axios.get('/api/regulatory/index/getIndexWfMaps', {
+                    params: {
+                        "regionCode": regionCode,
+                        "wfType": wfType,// 危废类型,危废Id
+                        "dataType":dataType, // 数据类型[产废量-1;贮存量-2;转移量-3;接收量-4;处置量-5;]
+                        "bssw": sw,
+                        "bsne": ne
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            var entCountData = res.data;
+                            if (entCountData.length > 0) {
+                                entCountData.sort((a,b)=>{
+                                    return b.yearAmount - a.yearAmount;
+                                });
+                                _this.addEntMaker(res.data);
+                            }
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getAnnualReportStatisticsTotalWithRegion(regionCode) {
+                // map.clearOverlays();//清空地图覆盖物
+                var _this = this;
+                _this.clearOver();
+                _this.$axios.get('/api/regulatory/AnnualReportStatistics/getAnnualReportStatisticsTotalWithRegion', {
+                    params: {
+                        "regionCode": regionCode,
+                        "typeId": _this.typeId
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            var entCountData = res.data;
+                            if (entCountData.length > 0) {
+                                _this.addEntMaker(res.data);
+                            }
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            getRegionChildrenList(){
+                var _this = this;
+                _this.$axios.get('/api/regulatory/regionInfo/getRegionChildrenList', {
+                    params: {
+                        "regionCode": _this.regionCode
+                    }
+                }).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            _this.regionOptions = res.data;
+                            //_this.search.regionCode = res.data[0].value+'';
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            searchRegionChange(){
+                let regionInfo = this.$refs.regionElCascader.getCheckedNodes();
+                if (regionInfo && regionInfo.length > 0) {
+                    this.search.regionName = regionInfo[0].label;
+                    this.search.regionLevel = regionInfo[0].level + 1;
+                    this.search.regionCode = regionInfo[0].value;
+                    let parentRegionInfo = regionInfo[0].parent;
+                    if (parentRegionInfo != null) {
+                        this.search.regionParentCode = parentRegionInfo.value;
+                    } /*else {
+                        this.search.regionName = this.regionName;
+                        this.search.regionLevel = this.regionLevel;
+                        this.search.regionCode = this.regionCode;
+                        this.search.regionParentCode = this.parentCode;
+                    }*/
+                } else {
+                    customOverlay.clearMap("regionBoundaryOver",this);
+                    this.drawRegionBoundary();
+                    this.search.regionName = this.regionName?this.regionName:'';
+                    this.search.regionLevel = this.regionLevel;
+                    this.search.regionCode = this.regionCode;
+                    this.search.regionParentCode = this.parentCode;
+                    if(this.typeSelected === 'qiye'){
+                        this.searchMap();
+                    }else if(this.typeSelected === 'shuju'){
+                        this.searchMap1();
+                    }
+                    return;
+                }
+                // console.log(this.search.regionCode+"<<<当前省/市/区")
+                var name = this.userRegionName;
+                if(this.search.regionName!=name && this.search.regionName!=null){
+                    let zoom = this.map.getZoom();
+                    if(zoom==12){
+                        customOverlay.clearMap("regionBoundaryOver",this);
+                        customOverlay.queryDistrict(this,name);
+                    }
+                }
+                customOverlay.clearMap("regionBoundaryOver",this);
+                /*if(name==this.userRegionName){
+                    this.drawRegionBoundary();
+                }else{
+                    customOverlay.queryDistrict(this,name);
+                }*/
+                if(this.typeSelected === 'qiye'){
+                    this.searchMap();
+                }else if(this.typeSelected === 'shuju'){
+                    this.searchMap1();
+                }
+            },
+            selectRegionInfoByUser(){
+                var _this = this;
+                var userId = sessionStorage.getItem('userId');
+                _this.$axios.get('/api/regulatory/index/selectRegionInfoByUser/' + userId).then(
+                    function (res) {
+                        if (res.code == 0) {
+                            if (res.data != null) {
+                                _this.lng = res.data.lng;
+                                _this.lat = res.data.lat;
+                                _this.search.regionName = res.data.regionName;
+                                if (res.data.regionLevel = 3) {
+                                    _this.centerLevel = 13;
+                                } else if (res.data.regionLevel = 2) {
+                                    _this.centerLevel = 8;
+                                }
+                            }
+                            // 地图
+                            _this.initPage();
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                    // 地图
+                    _this.initPage();
+                });
+            },
+            initType() {
+                var _this = this;
+                _this.$axios.post("/api/regulatory/type/showDicType").then((res) => {
+                                          let harzardousTypeList= sessionStorage.getItem('harzardousTypeList')
+                            let harzardousList = JSON.parse(harzardousTypeList)
+                           res.data.forEach((item)=>{
+            harzardousList.forEach(ele=>{
+                if(item.typeName==ele.typeName){
+item.dicTypeExplain=ele.dicTypeExplain
+                }
+            })      
+                           }) 
+                               let filteredList = res.data.filter(item=>{
+              
+                  if(item.dicTypeExplain!=undefined ){
+                      return item
+                  }
+                   
+                });   
+                    _this.dicTypes = filteredList;
+                });
+            },
+            entLineEchartChange(type){
+                var _this = this;
+                var entInfo = this.entInfo;
+                _this.$axios.get('/api/regulatory/index/selectEntLineEchartsByTime', {
+                    params: {
+                        "entId": entInfo.entId,// 企业Id
+                        "timeType": type,// 父级点位code
+                    }
+                }).then( (res)=> {
+                        if (res.code == 0) {
+                            this.buttonSelected = type;
+                            entInfoLineEcharts(_this,res.data?res.data.xdata:[],res.data?res.data.ydata[0]:[],entInfo.entKind);
+                        }
+                    }
+                ).catch((error) => {
+                    // catch 指请求出错的处理
+                    // console.log(error);
+                });
+            },
+            initData(){
+                this.entInfo = '';
+                this.dataCountSource = 1;
+                this.dicType = '';
+            },
+            dataCountSourceType(item){
+                this.dataCountSource = item.value;
+                this.enterpriseAndData.enterprise.EnterpriseEchars.series[0].name=item.name;
+                this.typeSelectedShuJu = 'region';
+                this.clearOver();
+                this.searchMap1();
+            }
+        },
+        created(){
+            // this.getAnnualReportStatisticsTotal();
+        },
+        mounted(){
+            document.getElementById("map-right").style.display = "block";
+            this.initData();
+            if (this.search.regionLevel == 3) {
+                this.isDisabled = true;
+            }
+            // 行政区域级联
+            this.getRegionChildrenList();
+            // 查询当前用户区域信息
+            this.selectRegionInfoByUser();
+            // 查询危废类型
+            this.initType();
+        },
+        watch: {
+            typeSelected: function(){
+                if(this.typeSelected=='qiye'){
+                    document.getElementById("map-right").style.display = "block";
+                    document.getElementById("enterpriseRight").style.zIndex=9997;
+                    $(".legend-box").fadeIn();
+                    this.clearOver();
+                    this.searchMap();
+                }else if(this.typeSelected=='shuju'){
+                    $(".legend-box").fadeOut();
+                    document.getElementById("map-right").style.display = "none";
+                    document.getElementById("map-right").style.zIndex=9997;
+                    this.clearOver();
+                    this.searchMap1();
+                }
+                this.initData();
+            }
+        }
+    }
+</script>
+
+<style>
+    @import url('wfMap.css');
+    .breadcrumb {
+        line-height: 59px;
+        height: 59px;
+        font-size: 18px;
+        color: #172033;
+    }
+
+    .wfMapAllmap {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        padding: 61px 10px 10px 10px;
+        background: #ffffff;
+        z-index: 9998 !important;
+    }
+
+    .myZhongEntMakerClass {
+        position: absolute;
+        background: #FFFFFF;
+        min-width: 150px;
+        border-radius: 4px;
+        border: 1px solid #EBEEF5;
+        padding: 12px;
+        z-index: 2000;
+        color: #475066;
+        line-height: 1.4;
+        text-align: justify;
+        font-size: 14px;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        word-break: break-all;
+    }
+
+    /* 去掉地图左下角的百度LOGO */
+    .anchorBL {
+        display: none
+    }
+</style>
+<!---->

@@ -1,0 +1,191 @@
+@charset "UTF-8";
+$header-height: 72px; // 顶部高度
+$header-color: #fff; // 顶部文字颜色
+$width-horizontal: 20px; // 顶部横向留白间距
+$menu-hover-bg: rgba(255,255,255,.2); // 菜单划入背景色
+$menu-lineHeight: 24px; // 行高
+$avatar-size: 36px; // 头像宽高（圆形）
+$header-zIndex: 999;
+/*头部*/
+.header{
+  position: relative;
+  height: $header-height;
+  background: #0091DA;
+  background-image: linear-gradient(90deg, #0091DA 0%, #35A1EC 100%, #60B6DF 100%);
+  color: $header-color;
+  padding: 0 20px;
+  z-index: $header-zIndex;
+  a{
+    color: $header-color;
+  }
+}
+//logo
+.logo{
+  float: left;
+  margin-right: 20px;
+  padding: 18px 0;
+  line-height: 36px;
+  .logo-img{
+    float: left;
+    width: auto;
+    height: 26px;
+    margin: 5px 10px 0 0;
+  }
+  .logo-text{
+    float: left;
+    font-size: 24px;
+    font-weight: 500;
+  }
+}
+// 右侧用户
+.header-user{
+  float: right;
+  line-height: 32px;
+  padding: 20px 0;
+  .user-avatar{
+    float: left;
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+  .user-avatar-img{
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 100%;
+    border: 1px solid #fff;
+    border-radius: 100%;
+  }
+  .user-name{
+    float: left;
+    margin-right: 10px;
+  }
+  .user-logout{
+    float: left;
+  }
+}
+//右侧菜单
+.header-menu{
+  float: right;
+  .menu-item{
+    float: left;
+    height: $header-height;
+    position: relative;
+    z-index: $header-zIndex;
+    &:hover{
+      .menu-btn{
+        background: $menu-hover-bg;
+        .arrow{
+          transform: rotate(180deg);
+        }
+      }
+      .menu-dropdown{
+        visibility: visible;
+        max-height: 200px;
+      }
+    }
+  }
+  .menu-divider{
+    width: 1px;
+    height: $header-height - 20;
+    background: rgba(255,255,255,.2);
+    margin: 10px $width-horizontal;
+  }
+  .menu-text{
+    line-height: $header-height;
+    padding: 0 $width-horizontal;
+  }
+  .menu-btn{
+    display: block;
+    height: $header-height;
+    line-height: $menu-lineHeight;
+    padding: ($header-height - $menu-lineHeight)/2 $width-horizontal;
+    color: $header-color;
+    &:hover{
+      color: $header-color;
+      background: $menu-hover-bg;
+    }
+    .icon{
+      font-size: 20px;
+      position: relative;
+      vertical-align: middle;
+      &+.menu-btn-text{
+        margin-left: 5px;
+      }
+    }
+    .menu-btn-text{
+      vertical-align: middle;
+    }
+  }
+  //用户
+  .menu-user-hd{
+    line-height: $avatar-size;
+    padding: ($header-height - $avatar-size)/2 $width-horizontal;
+    .user-avatar{
+      float: left;
+      margin-right: 10px;
+    }
+    .user-avatar-img{
+      display: block;
+      width: $avatar-size;
+      height: $avatar-size;
+      border-radius: 100%;
+    }
+    .user-name{
+      position: relative;
+      float: left;
+      padding-right: 15px;
+      white-space: nowrap;
+      .user-name-text{
+        line-height: $avatar-size/2;
+        white-space: nowrap;
+      }
+      .arrow{
+        position: absolute;
+        top: 50%;
+        right: 0;
+        margin-top: -2px;
+        @include arrow(bottom,4px,#fff);
+        transition: .3s linear all;
+      }
+    }
+  }
+  .badge{
+    position: absolute;
+    top: -12px;
+    right: -12px;
+  }
+  .badge-dot{
+    position: absolute;
+    top: -2px;
+    right: -2px;
+  }
+  .menu-dropdown{
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 100%;
+    border: 1px solid $color-border;
+    background: #fff;
+    z-index: 999;
+    @include shadow;
+    max-height: 0;
+    transition: .3s ease-in-out all;
+    visibility: hidden;
+    overflow: hidden;
+  }
+  .menu-dropdown-list{
+    padding: 10px 0;
+    a{
+      display: block;
+      height: 30px;
+      line-height: 30px;
+      padding: 0 $width-horizontal;
+      white-space: nowrap;
+      color: $color;
+      &:hover{
+        color: $color-primary;
+      }
+    }
+  }
+}

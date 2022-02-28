@@ -1,0 +1,210 @@
+@charset "UTF-8";
+// 左侧树菜单
+$sidebar-width: 190px;
+$sidebar-width-mini: 56px;
+
+$sidebar-bg: #4E5767;//左侧背景色
+$sidebar-color: #fff;//文字颜色
+$sidebar-color-hover: #fff;//滑入文字颜色
+$sidebar-color-active: #fff;//选中文字颜色
+
+
+$sidebar-item-height: 62px;//列表项单行高度
+$sidebar-item-lineHeight: 20px;//列表项单行行高
+$sidebar-item-padding-left: 20px;//左留白
+$sidebar-item-padding-right: 20px;//左留白
+$sidebar-item-padding-vertical: ($sidebar-item-height - $sidebar-item-lineHeight)/2;//垂直方向留白
+$sidebar-item-bg-active: #3A4353;//选中项背景色
+
+$sidebar-menu-icon-width: 16px;//左侧图标宽度
+$sidebar-menu-icon-margin: 10px;//左侧图标距离文字宽度
+
+$sidebar-child-bg: rgba(255,255,255,.1); //子集背景色
+$sidebar-child-item-height: 42px;//子集列表项单行高度
+$sidebar-child-item-padding-vertical: ($sidebar-child-item-height - $sidebar-item-lineHeight)/2;//垂直方向留白
+
+
+.sidebar{
+  position: relative;
+  width: $sidebar-width;
+  height: 100%;
+  overflow: hidden;
+  background: $sidebar-bg;
+}
+.sidebar-menu{
+  .menu-item{
+    position: relative;
+    // border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  a{
+    color: $sidebar-color;
+    display: block;
+    height: $sidebar-item-height;
+    line-height: $sidebar-item-lineHeight;
+    padding: $sidebar-item-padding-vertical $sidebar-item-padding-right $sidebar-item-padding-vertical $sidebar-item-padding-left;
+    position: relative;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    transition: .3s linear background,.3s linear color;
+    .menu-icon{
+      float: left;
+      width: $sidebar-menu-icon-width;
+      margin-right: $sidebar-menu-icon-margin;
+      text-align: center;
+      height: $sidebar-item-lineHeight;
+      line-height: $sidebar-item-lineHeight;
+    }
+    .menu-text{
+      font-size: $size-lg;
+    }
+    .menu-toggle{
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      text-align: center;
+      font-size: 14px;
+      right: 10px;
+      top: ($sidebar-item-height - 14)/2;
+      transition: .3s linear transform;
+      cursor: pointer;
+    }
+    &:hover{
+      color: $sidebar-color-hover;
+      background: $sidebar-item-bg-active;
+    }
+  }
+  //标签
+  .menu-label{
+    position: absolute;
+    right: 10px;
+    top: ($sidebar-item-height - 16)/2;
+    height: 16px;
+    line-height: 16px;
+    padding: 0 5px;
+    min-width: 16px;
+    color: #fff;
+    background: $color-primary;
+    border-radius: 2px;
+    font-size: $size-sm;
+    text-align: center;
+    white-space: nowrap;
+  }
+  //展开状态下箭头
+  .is-open{
+    >a{
+      background: $sidebar-item-bg-active;
+    }
+    >a>.menu-toggle{
+      transform: rotate(-90deg);
+    }
+    // >a>.icon-plus{
+    //   transform: rotate(45deg);
+    // }
+    >.menu-child{
+      display: block;
+    }
+  }
+  //子菜单
+  .menu-child{
+    padding-left: $sidebar-item-padding-left;
+    // background: $sidebar-child-bg;
+    display: none;
+    a{
+      height: $sidebar-child-item-height;
+      padding: $sidebar-child-item-padding-vertical $sidebar-item-padding-right $sidebar-child-item-padding-vertical $sidebar-item-padding-left;
+      overflow: hidden;
+      .menu-toggle{
+        top: ($sidebar-child-item-height - 14)/2;
+      }
+      .menu-text{
+        font-size: $size;
+        color: #ddd;
+        white-space: nowrap;
+      }
+      &:hover{
+        color: $sidebar-color-hover;
+        background: $color-primary;
+        .menu-text{
+          color: #fff;
+        }
+      }
+    }
+    .is-active{
+      >a{
+        color: $sidebar-color-hover;
+        background: $color-primary;
+        .menu-text{
+          color: #fff;
+        }
+      }
+    }
+  }
+  //二级菜单
+  >li>.menu-child>li>a{
+    padding-left: $sidebar-menu-icon-width + $sidebar-menu-icon-margin;
+  }
+  //三级菜单
+  // >li>.menu-child>li>.menu-child>li>a{
+  //   padding-left: $sidebar-item-padding-left + $sidebar-item-padding-left + $sidebar-menu-icon-width + $sidebar-menu-icon-margin;
+  // }
+  //四级菜单
+  // >li>.menu-child>li>.menu-child>li>.menu-child>li>a{
+  //   padding-left: $sidebar-item-padding-left + $sidebar-item-padding-left + $sidebar-item-padding-left + $sidebar-menu-icon-width + $sidebar-menu-icon-margin;
+  // }
+  //选中状态
+  .is-active{
+    >a{
+      color: $sidebar-color-active;
+      background: $sidebar-item-bg-active;
+      border-left-color: $color-primary;
+    }
+  }
+}
+.sidebar-toggle{
+  float: left;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  color: rgba(255,255,255,.8);
+  margin-top: 26px;
+  cursor: pointer;
+  .icon{
+    transition: .3s linear color;
+    font-size: 18px;
+  }
+  &:hover{
+    color: #fff;
+  }
+}
+// 收起状态
+.is-sidebar-mini{
+  .sidebar-toggle{
+    .icon-shouqi:before {
+      content: "\e7e2";
+    }
+  }
+  .sidebar{
+    width: $sidebar-width-mini;
+    .menu-text,
+    .menu-toggle,
+    .menu-label{
+      display: none;
+    }
+    .menu-icon{
+      // float: none;
+      // display: block;
+      // width: 100%;
+      // text-align: center;
+      margin-right: 0 !important;
+    }
+    .sidebar-menu > li > .menu-child > li a{
+      padding-left: $sidebar-item-padding-left !important;
+    }
+  }
+  .content{
+    // left: $sidebar-width-mini;
+  }
+}

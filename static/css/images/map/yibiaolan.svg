@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="173px" height="142px" viewBox="0 0 173 142" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>Apple TV</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="-10.6924505%" y1="24.7572849%" x2="138.574307%" y2="27.3082826%" id="linearGradient-1">
+            <stop stop-color="#2198E2" offset="0%"></stop>
+            <stop stop-color="#2198E2" offset="99.9262456%"></stop>
+            <stop stop-color="#40E9BD" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="-10.6924505%" y1="22.6022657%" x2="138.574307%" y2="25.3710471%" id="linearGradient-2">
+            <stop stop-color="#2198E2" offset="0%"></stop>
+            <stop stop-color="#2198E2" offset="98.9647072%"></stop>
+            <stop stop-color="#40E9BD" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Apple-TV" transform="translate(-1727.000000, -101.000000)">
+            <path d="M1886.09375,230.334414 C1887.73343,226.775611 1889.13981,223.077652 1890.29217,219.262127 C1892.70106,211.286198 1894,202.796534 1894,193.990332 C1894,147.603753 1857.95892,110 1813.5,110 C1769.04108,110 1733,147.603753 1733,193.990332 C1733,208.071649 1736.32123,221.343616 1742.19098,233" id="路径备份-4" stroke="url(#linearGradient-1)" stroke-width="7" opacity="0.57140532" stroke-linejoin="round" stroke-dasharray="1,3"></path>
+            <path d="M1888,236.694196 L1874.33101,229.385841 C1881.06203,218.534291 1884.9476,205.73807 1884.9476,192.035714 C1884.9476,152.803773 1853.09505,121 1813.80293,121 C1774.51081,121 1742.65826,152.803773 1742.65826,192.035714 C1742.65826,205.768121 1746.56089,218.590414 1753.31918,229.45721 L1741,238" id="路径备份-6" stroke="url(#linearGradient-2)" stroke-width="3" stroke-linecap="round"></path>
+        </g>
+    </g>
+</svg>

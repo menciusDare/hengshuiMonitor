@@ -1,0 +1,268 @@
+
+.login-page {
+    width: 100%;
+    height: 100%;
+    background: url('../images/login.png');
+    background-size: cover;
+  }
+  .login-page .login-side {
+    width: 100%;
+    height: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    color: #fff;
+    text-align: center;
+    padding-bottom: 40px;
+  }
+  .login-page .login-side img {
+    display: block;
+    width: 273px;
+    height: auto;
+    margin: 0 auto 30px auto;
+  }
+  .login-page .login-side h1 {
+    font-size: 50px;
+  }
+  .login-page .login-side p {
+    font-size: 28px;
+  }
+  .login-page .login-main {
+    width: 490px;
+    height: 549px;
+    background: url('../images/pic/bg.png');
+    background-size: cover;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    position:fixed;
+    top: 50%;
+    left:50%;
+    transform: translate(-250px,-250px);
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .login-page .login-main a {
+    color: rgba(255, 255, 255, 0.7);
+    -webkit-transition: .3s linear color;
+    transition: .3s linear color;
+  }
+  .login-page .login-main a:hover {
+    color: #fff;
+  }
+  .login-page .login-main .login-main-bd {
+    width: 100%;
+    padding: 0 13%;
+    font-size: 14px;
+  }
+  .login-page .login-main .login-tit {
+    font-size: 22px;
+    line-height: 30px;
+    margin-bottom: 26px;
+    text-align: center;
+    color: #fff;
+  }
+  .login-page .login-main .login-item {
+    margin-bottom: 26px;
+    position: relative;
+  }
+  .login-page .login-main .login-label {
+    display: block;
+    height: 24px;
+    line-height: 24px;
+  }
+  .login-page .login-main .login-input {
+    line-height: 20px;
+    padding: 8px 0 7px 0;
+    width: 360px;
+    height: 38px;
+    background:rgba(0,0,0,1);
+    opacity:0.5;
+    border-radius:2px;
+    color: #fff;
+    font-size: 14px;
+    -webkit-transition: .3s linear border-color;
+    transition: .3s linear border-color;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .login-page .login-main .login-input:focus {
+    outline: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-bottom-color: white;
+  }
+  .login-page .login-main .login-input:-webkit-autofill {
+    -webkit-text-fill-color: #fff !important;
+    -webkit-transition: background-color 5000s ease-in-out 0s;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  .login-page .login-main .login-input.login-input-code {
+    padding-right: 200px;
+  }
+  .login-page .login-main ::-webkit-input-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+  }
+  .login-page .login-main :-moz-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+  }
+  .login-page .login-main ::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+  }
+  .login-page .login-main :-ms-input-placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 400 !important;
+  }
+  .login-page .login-main .login-code {
+    position: absolute;
+    top: 26px;
+    right: 0;
+    height: 30px;
+    line-height: 30px;
+  }
+  .login-page .login-main .login-code .login-code-pic {
+    float: left;
+    height: 30px;
+    width: auto;
+    margin-right: 10px;
+  }
+  .login-page .login-main .login-code .login-code-text {
+    color: #fff;
+    cursor: pointer;
+  }
+  .login-page .login-main .login-tips {
+    position: absolute;
+    bottom: -26px;
+    left: 0;
+    height: 26px;
+    line-height: 26px;
+    color: #FF7575;
+    display: none;
+  }
+  .login-page .login-main .login-item-btn {
+    margin-top: 60px;
+    margin-bottom: 20px;
+  }
+  .login-page .login-main .login-btn {
+    display: block;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    background: #0091DA;
+    color: #fff;
+    font-size: 20px;
+    border-radius: 3px;
+    letter-spacing: 20px;
+    text-align: center;
+    -webkit-transition: .3s all;
+    transition: .3s all;
+  }
+  .login-page .login-main .login-btn:hover {
+    opacity: .8;
+  }
+  .login-page .login-main .login-item-text {
+    height: 30px;
+    line-height: 30px;
+  }
+  .login-page .login-main .login-item-text .login-remember {
+    float: left;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+  }
+  .login-page .login-main .login-item-text .login-remember i {
+    float: left;
+    margin: 7px 5px 0 0;
+    width: 16px;
+    height: 16px;
+    background-image: url('../images/remember.png');
+    /*background-image: -webkit-image-set(url(../images/remember.png) 1x, url(../images/remember@2x.png) 2x);*/
+    background-image: image-set(url('../images/remember.png') 1x, url('../images/remember@2x.png') 2x);
+  }
+  .login-page .login-main .login-item-text .login-remember.is-active i {
+    background-position: -16px 0;
+  }
+  .login-page .login-main .login-item-text .login-account {
+    float: right;
+  }
+  .login-page .login-main .login-item-text .login-account span {
+    margin: 0 5px;
+  }
+  .login-page .login-main-foot {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 600px;
+    text-align: center;
+  }
+  .login-page .login-main-foot p {
+    line-height: 24px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .login-page .login-main-foot p span {
+    margin: 0 5px;
+  }
+  
+  
+  
+  .footer {
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    color: #999;
+    font-size: 15px;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 20%;
+    margin-left: -10%;
+  }
+  .footer span {
+    margin: 0 5px;
+  }
+  .text-conent{
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .button-type{
+    width: 70px;
+    height: 35px;
+    background: #33a7e1;
+    font-weight: 500;
+    color: white;
+    border: 1px solid #FFFFFF;
+    border-radius: 4px;
+  }
+  .button-type2{
+    width: 95px;
+    height: 35px;
+    background: #33a7e1;
+    font-weight: 500;
+    color: white;
+    border: 1px solid #FFFFFF;
+    border-radius: 4px;
+  }
+  
